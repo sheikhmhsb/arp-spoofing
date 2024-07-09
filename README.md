@@ -12,4 +12,4 @@ Permissions: Running a packet spoofing script usually requires administrative or
 Ethics and Legality: Ensure you have explicit permission to perform ARP spoofing and packet capturing. Unauthorized ARP spoofing and packet capturing are illegal and unethical.
 
 **Conclusion**
-This script demonstrates how to scan a network to identify active hosts, perform ARP spoofing on them, and capture and log the packets using Node.js. Use this knowledge responsibly and only in environments where you have explicit authorization to conduct such activities. If you are interested in learning more about network security, consider using ethical hacking platforms or participating in cybersecurity courses and competitions.
+This script demonstrates how to scan a network to identify active hosts, perform ARP spoofing on them, and capture and log the packets using Node.js. Use this knowledge responsibly and only in environments where you have explicit authorization to conduct such activities.
