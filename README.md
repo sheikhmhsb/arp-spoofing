@@ -1,3 +1,5 @@
+npm install raw-socket pcap node-net-ping
+
 **Explanation:**
 Get Local IP Address: Determines the IP address of the local machine on the specified network interface.
 Scan Network: Uses node-net-ping to perform a ping sweep across the network and identify active hosts.
